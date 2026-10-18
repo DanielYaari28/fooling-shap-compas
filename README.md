@@ -93,8 +93,7 @@ data/                        COMPAS CSV
 
 ## Known limitations
 
-- **Brittle by design.** The detector exploits one fact about KernelExplainer
-  (background reuse). An auditor who queries in batches of ≤25 rows would likely
+- **Brittle by design.** The detector exploits one fact about KernelExplainer. An auditor who queries in batches of less than 25 rows would likely
   defeat it.
 - **The honest model flags every African-American defendant (100%)**: the
   0.35 penalty saturates the model. A lower `bias_strength` gives a more
@@ -102,30 +101,16 @@ data/                        COMPAS CSV
 - **Race is last .** Race (0.0288) is essentially tied with `juv_fel_count`
   (0.0288), so "rank #6" depends on a tie at four decimals. A fairer description
   is "tied for last, ~84% lower than the honest model".
-- **The 150 uncaught rows are not detector mistakes.** Every one of the 310,000
-  coalition rows SHAP generated (50 test rows x 62 coalitions x 100 background rows)
-  was caught. The uncaught 150 are KernelExplainer's two anchor calls: the 50
-  explained instances and the 100 background rows, each batch fully unique, so the
-  Lookout correctly treats them as real and the BiasedModel answers. These
-  anchors plausibly explain why race is not exactly zero (SHAP forces its values
-  to sum to the gap between the anchors), but I have not tested that explanation.
-- **SHAP only.** LIME and other explainers were not attacked. The Volkswagen and
   Huawei cases cited on the poster are analogies; I found no documented case of
   a deployed model fooling SHAP or LIME.
-- **Single run, single seed**, no confidence intervals. Numbers reproduced
-  exactly on a second machine (Windows, Python 3.12, shap 0.52.0,
-  scikit-learn 1.9.1, pandas 3.0.6, numpy 2.5.3), but other `shap` versions
-  were not tested.
 
 ## Ideas for future work
 
-Adaptive auditor (small-batch queries); a model that *learned* its bias instead
-of having it injected; LIME and other post-hoc explainers.
+Adaptive auditor (small-batch queries) and LIME and other post-hoc explainers.
 
 ## References
 
 - Slack, Hilgard, Jia, Singh, Lakkaraju (2019). *Fooling LIME and SHAP.* AIES. https://arxiv.org/abs/1911.02508 · code: https://github.com/dylan-slack/Fooling-LIME-SHAP
-- Angwin, Larson, Mattu, Kirchner (2016). *Machine Bias.* ProPublica.
 - U.S. Department of Justice (2017). *Volkswagen AG Agrees to Plead Guilty and Pay $4.3 Billion in Criminal and Civil Penalties.* justice.gov
 - Engadget (2018). *Huawei was caught cheating on benchmarks.* engadget.com
 
