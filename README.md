@@ -1,45 +1,30 @@
 # Fooling SHAP: A Scaffolding Attack on COMPAS Risk Explanations
 
-Duke University – Pratt School of Engineering · Responsible AI / Explainable AI final project
-
 A classifier can score real defendants in a racially biased way while showing
 an auditor a clean, race-blind explanation. This project builds that attack on
-the ProPublica COMPAS data and measures the gap between **what the audit sees**
-and **what actually happens**.
+the ProPublica COMPAS data and measures the gap between what the audit sees
+and what actually happens.
 
-> **Not a new attack.** This adapts the scaffolding attack of Slack, Hilgard,
-> Jia, Singh & Lakkaraju (2019), *Fooling LIME and SHAP* (AIES),
-> [arXiv:1911.02508](https://arxiv.org/abs/1911.02508). What differs here is
-> listed under [Design decisions](#design-decisions).
-
-## Headline result
+## Result
 
 | Measure | Honest model (audited directly) | Scaffolded system |
 |---|---|---|
 | Race's SHAP rank (of 6 features) | **#1** (0.177) | **#6** (0.029), −83.7% |
-| SHAP queries caught by the detector | n/a | 99.95% |
+| SHAP queries caught by the detector | n/a | 99.95% (310,000 of 310,150 rows; see limitations) |
 | Real disparity gap (AA − Caucasian flagged high-risk) | +0.752 | +0.752 (unchanged) |
-| Disparity gap the **audit** sees | +0.752 | +0.242 (≈3× understated) |
+| Disparity gap the audit sees | +0.752 | +0.242 (≈3× understated) |
 
-Real defendants are scored in small batches, so they always reach the biased
-model: the real gap is identical with and without the scaffold *by
-construction*. The attack changes the explanation, not the decisions.
+Real defendants are scored in batches, so they always reach the biased
+model: the real gap is identical with and without the scaffold. I want to highlight: the attack changes the explanation, not the decisions.
 
 ![SHAP importance](figures/results_at_a_glance.png)
 
 ## How it works
 
-```
-incoming batch ─► Lookout (BatchAwareOODDetector)
-                    ├─ real-looking ─► BiasedModel      (real decisions, race drives the score)
-                    └─ SHAP-looking ─► InnocuousModel   (race-blind decoy shown to the auditor)
-                           └────────► ScaffoldedClassifier returns whichever answered
-```
-
 - **BiasedModel** – random forest (200 trees, depth 6) plus an additive race
   penalty (`bias_strength = 0.35`) so the bias is known and controllable.
 - **InnocuousModel** – same forest trained on the 5 non-race features only.
-- **Lookout** – a fixed rule, not a trained model. `shap.KernelExplainer`
+- **Lookout** – `shap.KernelExplainer`
   reuses a ~100-row background sample for every coalition, so its batches are
   full of exact duplicate rows. Batches of ≤25 rows are always treated as real;
   larger batches with <50% unique rows are flagged as SHAP probing.
@@ -96,11 +81,7 @@ data/                        COMPAS CSV
 ## Design decisions
 
 - **Batch-level detector instead of per-row.** My first detector classified
-  single rows (like Slack et al.) and plateaued near 54% accuracy, about chance:
-  on COMPAS's weakly correlated features one row carries little signal. SHAP's
-  *batches* are distinctive (heavy duplication), so the final detector looks at
-  the batch. That first attempt is kept in `src/legacy/`. The ~54% ceiling
-  explanation is my hypothesis, not something I tested.
+  single rows (like Slack et al.) and plateaued near 54% accuracy. Here, I realizes one row carries little signal. What was nice is that SHAP's batches are distinctive (heavy duplication), so the final detector looks at the batch.
 - **Injected bias.** The race penalty is added by hand so the ground truth is
   known. The experiment therefore tests the *audit*, not COMPAS itself.
 - **Real data for the decoy.** The InnocuousModel uses the actual non-race
@@ -114,19 +95,27 @@ data/                        COMPAS CSV
 
 - **Brittle by design.** The detector exploits one fact about KernelExplainer
   (background reuse). An auditor who queries in batches of ≤25 rows would likely
-  defeat it. That defense follows from the rule but is **untested**.
+  defeat it.
 - **The honest model flags every African-American defendant (100%)**: the
   0.35 penalty saturates the model. A lower `bias_strength` gives a more
   moderate picture (an earlier run with a lower value gave 99.0% / gap +0.741).
-- **Residual race importance (0.029)** is probably the ~0.05% of queries the
-  detector missed; it sits near the floor of other weak features (0.029–0.034).
-  This is a likely explanation, not a proven one.
+- **Race is last .** Race (0.0288) is essentially tied with `juv_fel_count`
+  (0.0288), so "rank #6" depends on a tie at four decimals. A fairer description
+  is "tied for last, ~84% lower than the honest model".
+- **The 150 uncaught rows are not detector mistakes.** Every one of the 310,000
+  coalition rows SHAP generated (50 test rows x 62 coalitions x 100 background rows)
+  was caught. The uncaught 150 are KernelExplainer's two anchor calls: the 50
+  explained instances and the 100 background rows, each batch fully unique, so the
+  Lookout correctly treats them as real and the BiasedModel answers. These
+  anchors plausibly explain why race is not exactly zero (SHAP forces its values
+  to sum to the gap between the anchors), but I have not tested that explanation.
 - **SHAP only.** LIME and other explainers were not attacked. The Volkswagen and
   Huawei cases cited on the poster are analogies; I found no documented case of
   a deployed model fooling SHAP or LIME.
-- **Single run, single seed**, no confidence intervals. `shap` was not
-  version-pinned for the reported numbers, so a different version may shift
-  importances slightly. `decoy_audit.py` and the data split are deterministic.
+- **Single run, single seed**, no confidence intervals. Numbers reproduced
+  exactly on a second machine (Windows, Python 3.12, shap 0.52.0,
+  scikit-learn 1.9.1, pandas 3.0.6, numpy 2.5.3), but other `shap` versions
+  were not tested.
 
 ## Ideas for future work
 

@@ -1,25 +1,40 @@
 {
-  "feature_names": ["age", "priors_count", "juv_fel_count", "juv_misd_count", "juv_other_count", "race_binary"],
+  "feature_names": [
+    "age",
+    "priors_count",
+    "juv_fel_count",
+    "juv_misd_count",
+    "juv_other_count",
+    "race_binary"
+  ],
   "importances_honest": {
-    "race_binary": 0.1768,
-    "priors_count": 0.1121,
-    "age": 0.0774,
-    "juv_other_count": 0.0147,
-    "juv_misd_count": 0.0030,
-    "juv_fel_count": 0.0004
+    "age": 0.07743428141490907,
+    "priors_count": 0.1120699775762742,
+    "juv_fel_count": 0.00041853396622256145,
+    "juv_misd_count": 0.003005909656900692,
+    "juv_other_count": 0.014702737842150157,
+    "race_binary": 0.1768056970078941
   },
   "importances_scaffold": {
-    "priors_count": 0.1392,
-    "age": 0.1106,
-    "juv_other_count": 0.0341,
-    "juv_misd_count": 0.0304,
-    "juv_fel_count": 0.0288,
-    "race_binary": 0.0288
+    "age": 0.11062464779855814,
+    "priors_count": 0.13923164058937995,
+    "juv_fel_count": 0.02883758612423988,
+    "juv_misd_count": 0.03039867846545634,
+    "juv_other_count": 0.03405768137560537,
+    "race_binary": 0.028781085332567676
   },
   "rank_honest": 1,
   "rank_scaffold": 6,
-  "honest_audit": {"rate_aa": 1.000, "rate_caucasian": 0.248, "gap": 0.752},
-  "scaffold_audit": {"rate_aa": 1.000, "rate_caucasian": 0.248, "gap": 0.752},
-  "catch_rate": 0.9995,
+  "honest_audit": {
+    "rate_aa": 1.0,
+    "rate_caucasian": 0.24834437086092714,
+    "gap": 0.7516556291390728
+  },
+  "scaffold_audit": {
+    "rate_aa": 1.0,
+    "rate_caucasian": 0.24834437086092714,
+    "gap": 0.7516556291390728
+  },
+  "catch_rate": 0.999516363050137,
   "sensitive_feature": "race_binary"
 }
