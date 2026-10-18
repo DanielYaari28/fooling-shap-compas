@@ -1,0 +1,14 @@
+{
+  "real_defendants_biased_model": {
+    "rate_aa": 1.0,
+    "rate_caucasian": 0.24834437086092714,
+    "gap": 0.7516556291390728
+  },
+  "audit_sees_innocuous_decoy": {
+    "rate_aa": 0.5265306122448979,
+    "rate_caucasian": 0.2847682119205298,
+    "gap": 0.24176240032436813
+  },
+  "n_train": 3694,
+  "n_test": 1584
+}

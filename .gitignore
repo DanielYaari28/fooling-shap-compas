@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+# superseded, hand-built poster lives outside the repo
+results/COMPAS_Poster.pptx
